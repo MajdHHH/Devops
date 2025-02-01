@@ -1,0 +1,40 @@
+- name: Deploy Process Monitoring Docker Container
+  hosts: localhost
+  become: yes
+  tasks:
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Install Docker Compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Ensure Docker service is running
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Copy monitoring script
+      copy:
+        src: monitor.py
+        dest: /home/majd/monitor.py
+        mode: '0755'
+
+    - name: Copy Dockerfile
+      copy:
+        src: Dockerfile
+        dest: /home/majd/Dockerfile
+
+    - name: Copy Docker Compose file
+      copy:
+        src: docker-compose.yml
+        dest: /home/majd/docker-compose.yml
+
+    - name: Build and start container
+      command: docker-compose -f /home/majd/docker-compose.yml up -d
