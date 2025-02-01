@@ -1,0 +1,27 @@
+---
+- name: Run uptime inside Docker container
+  hosts: localhost
+  tasks:
+    - name: Ensure Docker container is running
+      docker_container:
+        name: uptime_container
+        image: ubuntu:latest
+        state: started
+        command: sleep infinity
+
+    - name: Run uptime command in the Docker container
+      docker_container:
+        name: uptime_container
+        command: uptime
+        state: started
+        restart_policy: unless-stopped
+
+    - name: Get the uptime result
+      docker_container_exec:
+        container: uptime_container
+        cmd: uptime
+      register: result
+
+    - name: Show uptime result
+      debug:
+        msg: "{{ result.stdout }}"
